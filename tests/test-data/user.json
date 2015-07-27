@@ -1,0 +1,24 @@
+{
+  "users": [
+    {
+     "comment": "valid",
+     "firstName": "John",
+     "lastName": "Doe",
+     "email": "john.doe@nowhere.com",
+     "userId": 1
+    },
+    {
+     "comment": "invalid",
+     "firstName": "John",
+     "email": "john.doe@nowhere.com",
+     "userId": 1
+    },
+    {
+     "comment": "invalid",
+     "firstName": "John",
+     "lastName": "Doe",
+     "email": "john.doe@nowhere.com",
+     "userId": -1
+    }
+  ]
+}
