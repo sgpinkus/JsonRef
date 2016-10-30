@@ -1,6 +1,6 @@
 <?php
 
-use \JsonDocs\Uri;
+use \JsonDoc\Uri;
 
 /**
  * Basic tests Uri class.
@@ -48,7 +48,7 @@ class UriTest extends PHPUnit_Framework_TestCase
   }
 
   /**
-   * @expectedException \JsonDocs\UriException
+   * @expectedException \JsonDoc\UriException
    */
   public function testUriUnsetException() {
     $uriStr = "http://nowhere.com/x/y/z?w=1#/a/b";

@@ -1,5 +1,5 @@
 <?php
-namespace JsonDocs;
+namespace JsonDoc;
 
 /**
  * Encapsulates a valid URI. Suprised PHP has no such class.

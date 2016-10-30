@@ -1,7 +1,7 @@
 <?php
-namespace JsonDocs;
+namespace JsonDoc;
 
-use JsonDocs\Exception\ResourceNotFoundException;
+use JsonDoc\Exception\ResourceNotFoundException;
 
 /**
  * Shim interface to alow client to control loading.

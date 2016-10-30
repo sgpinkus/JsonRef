@@ -1,5 +1,5 @@
 <?php
-namespace JsonDocs\Exception;
+namespace JsonDoc\Exception;
 
 /**
  * Map error code returned by json_last_error() to an exception.

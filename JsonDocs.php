@@ -1,12 +1,12 @@
 <?php
-namespace JsonDocs;
+namespace JsonDoc;
 
-use JsonDocs\JsonNullLoader;
-use JsonDocs\JsonRefPriorityQueue;
-use JsonDocs\JsonRef;
-use JsonDocs\Exception\JsonDecodeException;
-use JsonDocs\Exception\ResourceNotFoundException;
-use JsonDocs\Exception\JsonReferenceException;
+use JsonDoc\JsonNullLoader;
+use JsonDoc\JsonRefPriorityQueue;
+use JsonDoc\JsonRef;
+use JsonDoc\Exception\JsonDecodeException;
+use JsonDoc\Exception\ResourceNotFoundException;
+use JsonDoc\Exception\JsonReferenceException;
 
 /**
  * Maintain a cache of decoded, dereferenced JSON docs. Cachce is keyed by an absolute URI provide for each doc.

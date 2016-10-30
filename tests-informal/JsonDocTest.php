@@ -1,10 +1,10 @@
 <?php
-require_once '../loader.php';
-use JsonDocs\JsonDocs;
-use JsonDocs\JsonLoader;
-use JsonDocs\Uri;
-use JsonDocs\JsonRefPriorityQueue;
-use JsonDocs\Exception\ResourceNotFoundException;
+require_once 'loader.php';
+use JsonDoc\JsonDocs;
+use JsonDoc\JsonLoader;
+use JsonDoc\Uri;
+use JsonDoc\JsonRefPriorityQueue;
+use JsonDoc\Exception\ResourceNotFoundException;
 $basicRefsJsonUri = 'file:///' . dirname(__FILE__) . '/test-data/basic-refs.json';
 $basicRefsJson = json_decode(file_get_contents($basicRefsJsonUri));
 assert($basicRefsJson !== null);

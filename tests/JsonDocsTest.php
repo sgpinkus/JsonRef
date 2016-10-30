@@ -1,10 +1,10 @@
 <?php
 
-use \JsonDocs\JsonDocs;
-use \JsonDocs\JsonRefPriorityQueue;
-use \JsonDocs\Uri;
-use \JsonDocs\JsonRef;
-use \JsonDocs\JsonLoader;
+use JsonDoc\JsonDocs;
+use JsonDoc\JsonRefPriorityQueue;
+use JsonDoc\Uri;
+use JsonDoc\JsonRef;
+use JsonDoc\JsonLoader;
 
 /**
  * Basic tests Uri class.
@@ -108,7 +108,7 @@ class JsonDocsTest extends PHPUnit_Framework_TestCase
 
   /**
    * Test static getPointer() more.
-   * @expectedException \JsonDocs\Exception\ResourceNotFoundException
+   * @expectedException \JsonDoc\Exception\ResourceNotFoundException
    */
   public function testGetNonPointer() {
     $doc = json_decode(self::$basicJson);
@@ -131,7 +131,7 @@ class JsonDocsTest extends PHPUnit_Framework_TestCase
 
   /**
    * Test static pointer() more.
-   * @expectedException \JsonDocs\Exception\ResourceNotFoundException
+   * @expectedException \JsonDoc\Exception\ResourceNotFoundException
    */
   public function testNonPointer() {
     $cache = new JsonDocs(new JsonLoader());
@@ -154,7 +154,7 @@ class JsonDocsTest extends PHPUnit_Framework_TestCase
 
   /**
    * Test ref to ref chain.
-   * @expectedException \JsonDocs\Exception\JsonReferenceException
+   * @expectedException \JsonDoc\Exception\JsonReferenceException
    */
   public function testJsonDocsRefChain() {
     $cache = new JsonDocs(new JsonLoader());
@@ -163,7 +163,7 @@ class JsonDocsTest extends PHPUnit_Framework_TestCase
 
   /**
    * Test ref to ref chain.
-   * @expectedException \JsonDocs\Exception\ResourceNotFoundException
+   * @expectedException \JsonDoc\Exception\ResourceNotFoundException
    */
   public function testUseOfId() {
     $cache = new JsonDocs(new JsonLoader());
@@ -213,7 +213,7 @@ class JsonDocsTest extends PHPUnit_Framework_TestCase
 
   /**
    * Test load from junk string.
-   * @expectedException \JsonDocs\Exception\JsonDecodeException
+   * @expectedException \JsonDoc\Exception\JsonDecodeException
    */
   public function testLoadFromInvalidString() {
     $cache = new JsonDocs(new JsonLoader());

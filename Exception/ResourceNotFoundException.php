@@ -1,5 +1,5 @@
 <?php
-namespace JsonDocs\Exception;
+namespace JsonDoc\Exception;
 
 /**
  * Some resource requested from a service by name was not found.

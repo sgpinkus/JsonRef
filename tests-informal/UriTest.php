@@ -1,6 +1,6 @@
 <?php
-require_once '../loader.php';
-use JsonDocs\Uri;
+require_once 'loader.php';
+use JsonDoc\Uri;
 print new Uri("file://x") . "\n";
 print new Uri("http://x") . "\n";
 print new Uri("file:///") . "\n";

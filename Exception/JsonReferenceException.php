@@ -1,5 +1,5 @@
 <?php
-namespace JsonDocs\Exception;
+namespace JsonDoc\Exception;
 
 /**
  * Some sort of JSON Reference insanity is going on.
