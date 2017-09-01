@@ -1,11 +1,11 @@
 # Overview
-This library provides a PHP wrapper over the plain old data structure returned by `json_decode()` in order to implement [Json Reference](https://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03) and by extension [Json Pointer](https://tools.ietf.org/html/draft-ietf-appsawg-json-pointer-04) (Json Reference requires Json Pointer). This library simply replaces JSON References in a loaded document with native PHP references to other documents or to parts of the same document. It supports doing this on an existing decoded JSON document data structure, or may load and decode the document from a URI.
+This library provides a PHP wrapper over the plain old data structure returned by `json_decode()` in order to implement [Json Reference](https://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03) and by extension [Json Pointer](https://tools.ietf.org/html/draft-ietf-appsawg-json-pointer-04) (Json Reference requires Json Pointer). This library simply replaces JSON References in a loaded document with native PHP references to other documents or to parts of the same document. It supports doing this on an existing deserialized JSON document data structure, or loading and deserializing the document from a URI.
 
   * Almost full support for `$refs`. See below.
   * Support for `id` keyword, following [this amendment](https://github.com/json-schema/json-schema/wiki/The-%22id%22-conundrum#how-to-fix-that) to the ambiguous spec. Basically:
-    - `id` at root identifies the document. A root `id` may be absolute or relative. If it's relative how it's resolved to an absolute URI is undefined.
-    - `id` at non root identifies the given object in a document. Document `$refs` can ref it. Non root `id`s must be a non empty fragment URI, and unique within the document. Just like a HTML anchor.
-    - `id` DOES NOT establish a new base URI for relative URI resolution (That is useless rubbush and I refuse to implement it).
+    - `id` at root identifies the document. A root `id` may be an absolute or relative URI. If it's relative, how it is resolved to an absolute URI is undefined.
+    - `id` not at the root of a document identifies the given object in the document. Document `$refs` can refer to that part of the document by `id`. Non root `id`s must be a non empty fragment URI, and unique within the document. It's just like HTML anchors.
+    - `id` DOES NOT establish a new base URI for relative URI resolution (That is a useless, poorly thought out, part of the so called spec, and I refuse to implement it).
 
 # Usage
 
