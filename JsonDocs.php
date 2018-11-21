@@ -40,7 +40,8 @@ class JsonDocs implements \IteratorAggregate
    * @returns mixed reference to the loaded JSON object data structure.
    * @throws JsonLoaderException, JsonDecodeException, JsonCacheException
    */
-  public function loadUri(Uri $uri) {
+  public function loadUri($uri) {
+    $uri = static::parseUri($uri);
     $doc = null;
     $keyUri = self::normalizeKeyUri($uri);
     if(isset($this->cache[$keyUri.''])) {
@@ -53,17 +54,16 @@ class JsonDocs implements \IteratorAggregate
   }
 
   /**
-   * Decode, deref and store a JSON docs from string $doc
+   * Decode, deref and store a JSON docs from in $doc.
    * A URI is required to identify the document and for resolving relative refs.
    * The document is cached with a key equal to the name of the URI.
    * JSON Schema in particular uses `id` at root of doc to *identify* schema.
    * Uri may or may not be the same as that, but we pay no special consideration to `id`.
+   * @input $doc mixed string|obj|null
    * @returns mixed reference to the loaded JSON object data structure.
    */
-  public function loadDocStr($doc, Uri $uri) {
-    if(!is_string($doc)) {
-      throw new \InvalidArgumentException("Expected string, got " . gettype($doc));
-    }
+  public function loadDoc($doc, $uri) {
+    $uri = static::parseUri($uri);
     $keyUri = self::normalizeKeyUri($uri);
     if(isset($this->cache[$keyUri.''])) {
       $doc = $this->cache[$keyUri.'']['doc'];
@@ -75,21 +75,19 @@ class JsonDocs implements \IteratorAggregate
   }
 
   /**
-   * Decode, deref and store a JSON docs from object $doc.
-   * @returns mixed reference to the loaded JSON object data structure.
+   * @deprecated
+   * @see loadDoc()
    */
-  public function loadDocObj($doc, Uri $uri) {
-    if(!is_object($doc)) {
-      throw new \InvalidArgumentException("Expected object, got " . gettype($doc));
-    }
-    $keyUri = self::normalizeKeyUri($uri);
-    if(isset($this->cache[$keyUri.''])) {
-      $doc = $this->cache[$keyUri.'']['doc'];
-    }
-    else {
-      $doc = $this->_load($uri, new JsonRefPriorityQueue(), $doc);
-    }
-    return $doc;
+  public function loadDocStr(string $doc, $uri) {
+    return $this->loadDoc($doc, $uri);
+  }
+
+  /**
+   * @deprecated
+   * @see loadDoc(). Maintained for BWC.
+   */
+  public function loadDocObj(\StdClass $doc, $uri) {
+    return $this->loadDoc($doc, $uri);
   }
 
   /**
@@ -335,6 +333,15 @@ class JsonDocs implements \IteratorAggregate
     $keyUri = clone $uri;
     unset($keyUri->fragment);
     return $keyUri;
+  }
+
+  /**
+   * Most methods require a Uri, but user are lazy / like uncluttered code and want to pass strings.
+   */
+  public static function parseUri($uri) {
+    if($uri instanceof Uri)
+      return $uri;
+    return new Uri($uri);
   }
 }
 

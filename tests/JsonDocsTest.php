@@ -194,7 +194,7 @@ class JsonDocsTest extends PHPUnit_Framework_TestCase
 
   /**
    * Test load from not a string which is not allowed.
-   * @expectedException \InvalidArgumentException
+   * @expectedException \TypeError
    */
   public function testLoadFromNotAString() {
     $cache = new JsonDocs(new JsonLoader());
@@ -203,7 +203,7 @@ class JsonDocsTest extends PHPUnit_Framework_TestCase
 
   /**
    * Test load from not a object which is not allowed.
-   * @expectedException \InvalidArgumentException
+   * @expectedException \TypeError
    */
   public function testLoadFromNotAObject() {
     $cache = new JsonDocs(new JsonLoader());
