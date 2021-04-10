@@ -1,11 +1,12 @@
 <?php
 
 use \JsonDoc\Uri;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Basic tests Uri class.
  */
-class UriTest extends PHPUnit_Framework_TestCase
+class UriTest extends TestCase
 {
   /**
    * Basic test.

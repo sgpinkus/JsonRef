@@ -1,0 +1,9 @@
+{
+  "comment": "Valid circular loops.",
+  "definitions": {
+    "foo": {"properties": {"bar": {"$ref": "#/definitions/bar"}}},
+    "bar": {"properties": {"foo": {"$ref": "#/definitions/foo"}}}
+  },
+  "type": "object",
+  "properties": {"foo": {"$ref": "#/definitions/foo"}}
+}

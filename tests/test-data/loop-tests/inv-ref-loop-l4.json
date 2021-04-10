@@ -1,0 +1,7 @@
+{
+  "comment": "Invalid infinite ref loop",
+  "foo": { "$ref": "#/bah" },
+  "bah": { "$ref": "#/baz" },
+  "baz": { "$ref": "#/fop" },
+  "fop": { "$ref": "#/foo" }
+}
