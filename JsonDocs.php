@@ -8,12 +8,15 @@ use JsonDoc\Exception\JsonDecodeException;
 use JsonDoc\Exception\ResourceNotFoundException;
 use JsonDoc\Exception\JsonReferenceException;
 
+# define('DEBUG', 1);
+
 /**
- * Maintain a cache of decoded, dereferenced JSON docs. Cachce is keyed by an absolute URI provide for each doc.
+ * Maintains a cache of decoded, dereferenced JSON docs. Cache is keyed by an absolute URI provided for or extracted from each doc.
  * Loading JSON that contains JSON refs and dereferencing are closely coupled. So this class has both loading and deref responsibilities.
- * Json References are literally replaced with PHP references to other loaded documents in the internal cache (Yep the cache is potentially a big graph).
+ * Json References are literally replaced with PHP references to other loaded documents in the internal cache (Yes, the cache is potentially a big graph).
  * Supports retrieving part of a doc by JSON Pointer. Note however, when loading a document the fragment part of a URIs is ignored.
- * Actually loading raw data from remote (or local) sources pointed at by URIs is delegated to a JsonLoader.
+ * Actually loading raw data from remote (or local) sources pointed at by URIs is delegated to a JsonLoader. This allows
+ * the client to use different loader implementations - for example a loader that refuses to load remote resources.
  * For notes on the Json Reference specification see the following.
  * @see http://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03
  * @see http://json-schema.org/latest/json-schema-core.html#anchor25
@@ -148,12 +151,13 @@ class JsonDocs implements \IteratorAggregate
    * Fully load string encoded JSON Documents at given URI.
    * the algorithm collects all refs that need to to be resolved into a priority queue.
    * Before we begin dereferencing we make sure all JSON doc resources that are refered to are loaded by calling this method recursively.
-   * This method should only be called by load(), and itself.
+   * This method should only be called by load() and itself.
    * @input $uri of the resource to load. Must be fully qualified.
    * @input $refQueue a collection in which to store the refs we find.
    * @input $strDoc Mixed. If Null try to load from Uri. If string try to decode. Else assume its an object.
    */
   private function _load(Uri $uri, \SplPriorityQueue $refQueue, $strDoc = null) {
+    defined('DEBUG') && print __METHOD__ . " $uri\n";
     $tempRefs = [];
     $keyUri = self::normalizeKeyUri($uri);
 
@@ -190,7 +194,7 @@ class JsonDocs implements \IteratorAggregate
    * Remove all Json References ($ref) from loaded docs, replacing $ref object with PHP references to the pointed to value.
    * There are a three special cases to consider; refs to refs, refs to refs that are circular, refs through refs.
    * We are simply not allowing refs to refs - first two cases. Refs through refs may work depending on the order of resolution.
-   * To make this "may work" ness predictable a PriorityQueue has been used.
+   * To make this "may work", a PriorityQueue has been used.
    * Must be called after all referenced docs are loaded by load().
    * @input $refQueue A priority queue of refs that need dereferencing.
    * @todo Handle circular refs and ref to a refs properly.
@@ -221,10 +225,10 @@ class JsonDocs implements \IteratorAggregate
    * @throws JsonReferenceException
    */
   public static function parseDoc(&$doc, \SplPriorityQueue $refQueue, array &$refUris, array &$identities, Uri $baseUri, $depth = 0) {
-    defined('DEBUG') && print __METHOD__ . " $baseUri\n";
+    defined('DEBUG') && print __METHOD__ . " $baseUri";
     if(is_object($doc) || is_array($doc)) {
       foreach($doc as $key => &$value) {
-        defined('DEBUG') && print "\t$key\n";
+        defined('DEBUG') && print "\n\tKEY: $key\n";
         if(self::getId($value) && self::isJsonRef($value)) {
           throw new JsonReferenceException("Illegal JSON Schema. An object may not have both of 'id' and '\$ref'");
         }
@@ -237,7 +241,7 @@ class JsonDocs implements \IteratorAggregate
         }
         elseif(self::isJsonRef($value)) {
           $refUri = $baseUri->resolveRelativeUriOn(new Uri(self::getJsonRefPointer($value)));
-          defined('DEBUG') && print "\tFOUND REF $refUri\n";
+          defined('DEBUG') && print "\tFOUND REF: $refUri, DEPTH: $depth";
           $jsonRef = new JsonRef($value, $refUri, -1*$depth);
           $refQueue->insert($jsonRef, $jsonRef);
           $refUris[] = $refUri;

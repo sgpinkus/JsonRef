@@ -5,11 +5,12 @@ use JsonDoc\JsonRefPriorityQueue;
 use JsonDoc\Uri;
 use JsonDoc\JsonRef;
 use JsonDoc\JsonLoader;
+use PHPUnit\Framework\TestCase;
 
 /**
  * Basic tests Uri class.
  */
-class JsonDocsTest extends PHPUnit_Framework_TestCase
+class JsonDocsTest extends TestCase
 {
   private static $basicJson;
   private static $basicRefsJson;
@@ -54,6 +55,7 @@ class JsonDocsTest extends PHPUnit_Framework_TestCase
     $cache = new JsonDocs(new JsonLoader());
     $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/basic.json'));
     $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/basic-refs.json'));
+    $this->assertTrue($cache->exists(new Uri('file://' . getenv('DATADIR') . '/basic.json')));
   }
 
 
