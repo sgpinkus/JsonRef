@@ -65,7 +65,7 @@ class JsonDocsTest extends TestCase
   public function testJsonSchemaSchema() {
     $this->assertEquals(true, true);
     $jsonDocs = new JsonDocs();
-    $docUri = "file://" . getenv('DATADIR') . '/schema.json';
+    $docUri = "file://" . getenv('DATADIR') . '/schema-v4.json';
     $doc = file_get_contents($docUri);
     $schemaDoc = $jsonDocs->loadDocStr($doc, new Uri($docUri));
   }
@@ -171,6 +171,14 @@ class JsonDocsTest extends TestCase
     $cache = new JsonDocs(new JsonLoader());
     $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/no-keyword-id.json'));
     $cache->pointer(new Uri('file://' . getenv('DATADIR') . '/no-keyword-id.json#foo'));
+  }
+
+  public function testUseOfDollarId() {
+    $cache = new JsonDocs(new JsonLoader());
+    $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/dollar-id.json'));
+    $var = $cache->pointer(new Uri('file://' . getenv('DATADIR') . '/dollar-id.json#bah'));
+    $this->assertTrue(is_object($var));
+    $this->assertTrue($var->id === 'baz');
   }
 
   /**

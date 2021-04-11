@@ -8,8 +8,6 @@ use JsonDoc\Exception\JsonDecodeException;
 use JsonDoc\Exception\ResourceNotFoundException;
 use JsonDoc\Exception\JsonReferenceException;
 
-# define('DEBUG', 1);
-
 /**
  * Maintains a cache of decoded, dereferenced JSON docs. Cache is keyed by an absolute URI provided for or extracted from each doc.
  * Loading JSON that contains JSON refs and dereferencing are closely coupled. So this class has both loading and deref responsibilities.
@@ -225,21 +223,21 @@ class JsonDocs implements \IteratorAggregate
    * @throws JsonReferenceException
    */
   public static function parseDoc(&$doc, \SplPriorityQueue $refQueue, array &$refUris, array &$identities, Uri $baseUri, $depth = 0) {
-    defined('DEBUG') && print __METHOD__ . " $baseUri";
+    defined('DEBUG') && print __METHOD__ . " $baseUri\n";
     if(is_object($doc) || is_array($doc)) {
       foreach($doc as $key => &$value) {
-        defined('DEBUG') && print "\n\tKEY: $key\n";
-        if(self::getId($value) && self::isJsonRef($value)) {
-          throw new JsonReferenceException("Illegal JSON Schema. An object may not have both of 'id' and '\$ref'");
-        }
-        elseif($key != "properties" && self::getId($value)) { // An "id" is not a keyword in some contexts (properties AFAICT).
-          $id = self::getId($value);
+        defined('DEBUG') && print "\tKEY: $key\n";
+        $id = self::getId($value);
+        if($id) {
+          if(self::isJsonRef($value)) {
+            throw new JsonReferenceException("Illegal JSON Schema. An object may not have both of '\$id' and '\$ref'");
+          }
           if(isset($identities[$id])) {
-            throw new JsonReferenceException("Duplicate id '$id' found");
+            throw new JsonReferenceException("Duplicate \$id '$id' found");
           }
           $identities[$id] = &$value;
         }
-        elseif(self::isJsonRef($value)) {
+        if(self::isJsonRef($value)) {
           $refUri = $baseUri->resolveRelativeUriOn(new Uri(self::getJsonRefPointer($value)));
           defined('DEBUG') && print "\tFOUND REF: $refUri, DEPTH: $depth";
           $jsonRef = new JsonRef($value, $refUri, -1*$depth);
@@ -327,7 +325,8 @@ class JsonDocs implements \IteratorAggregate
   }
 
   public static function getId($o) {
-    return (is_object($o) && isset($o->id)) ? $o->id : null;
+    $id = '$id';
+    return (is_object($o) && isset($o->$id)) ? $o->$id : null;
   }
 
   /**

@@ -4,6 +4,7 @@
   "description": "Core schema meta-schema",
   "type": "object",
   "properties": {
+      "$id": "foo",
       "id": {
       "type": "string",
       "format": "uri"
@@ -11,8 +12,8 @@
       "foo": {
         "type": "object",
         "properties": {
-          "id": "fooey",
-          "comment": "not actually legal but for test"
+          "$id": "bah",
+          "id": "baz"
         }
       }
    },
