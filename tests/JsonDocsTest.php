@@ -155,16 +155,16 @@ class JsonDocsTest extends TestCase
   }
 
   /**
-   * Test ref to ref chain.
-   * @expectedException \JsonDoc\Exception\JsonReferenceException
+   * Test ref to ref chain OK
    */
   public function testJsonDocsRefChain() {
     $cache = new JsonDocs(new JsonLoader());
-    $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/basic-ref-to-ref.json'));
+    $doc = $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/basic-ref-to-ref.json'));
+    $this->assertEquals($doc->B[0], 'X-Value');
   }
 
   /**
-   * Test ref to ref chain.
+   * Test 'id' is not an '$id'.
    * @expectedException \JsonDoc\Exception\ResourceNotFoundException
    */
   public function testUseOfId() {
@@ -180,6 +180,26 @@ class JsonDocsTest extends TestCase
     $this->assertTrue(is_object($var));
     $this->assertTrue($var->id === 'baz');
   }
+
+  public function dataRefLoopFails() {
+    return [
+      # ['/loop-tests/inv-ref-loop-l0.json'], # TODO: This actually passes.
+      ['/loop-tests/inv-ref-loop-l2.json'],
+      ['/loop-tests/inv-ref-loop-l3.json'],
+      ['/loop-tests/inv-ref-loop-l4.json']
+    ];
+  }
+
+  /**
+   * Test 'id' is not an '$id'.
+   * @dataProvider dataRefLoopFails
+   * @expectedException \JsonDoc\Exception\JsonReferenceException
+   */
+  public function testRefLoopFails($filename) {
+    $cache = new JsonDocs(new JsonLoader());
+    $cache->loadUri(new Uri('file://' . getenv('DATADIR') . $filename));
+  }
+
 
   /**
    * Test load from string.
