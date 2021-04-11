@@ -58,8 +58,8 @@ class JsonDocs implements \IteratorAggregate
    * Decode, deref and store a JSON docs from in $doc.
    * A URI is required to identify the document and for resolving relative refs.
    * The document is cached with a key equal to the name of the URI.
-   * JSON Schema in particular uses `id` at root of doc to *identify* schema.
-   * Uri may or may not be the same as that, but we pay no special consideration to `id`.
+   * JSON Schema in particular uses `$id` at root of doc to *identify* schema.
+   * Uri may or may not be the same as that, but we pay no special consideration to root `$id`.
    * @input $doc mixed string|obj|null
    * @returns mixed reference to the loaded JSON object data structure.
    */
@@ -202,18 +202,29 @@ class JsonDocs implements \IteratorAggregate
   private function _deRef(\SplPriorityQueue $refQueue) {
     while(!$refQueue->isEmpty()) {
       $jsonRef = $refQueue->extract();
-      $pointerUri = $jsonRef->getUri();
       $ref =& $jsonRef->getRef();
-      $target =& $this->pointer($pointerUri);
-      if(self::isJsonRef($target)) {
-        throw new JsonReferenceException("JSON Reference to JSON Reference is not allowed");
+      if(!self::isJsonRef($ref)) { # Must have already been derefd.
+        continue;
       }
-      $ref = $target;
+      $this->__deRef($ref);
     }
   }
 
+  private function __deRef(&$ref, $loop = []) {
+    $loop[] = $ref;
+    $target =& $this->pointer($ref->{'$ref'});
+    if(self::isJsonRef($target)) {
+      if(in_array($target, $loop)) {
+        throw new JsonReferenceException("JSON Reference loop detected");
+      }
+      $this->__deRef($target, $loop);
+    }
+    $ref = $target;
+  }
+
   /**
-   * Find and stash all JSON Refs, and their referenced URIs.
+   * Find and stash all JSON Refs, and their referenced URIs. Since ref objects are replaced in output doc anyway,
+   * we can use the $ref object to stash working values. Specifically, here we rewrite $ref with it's absolute URI.
    * Can't use standard recursive iterator here because references + iterators don't work together.
    * @input $doc a decoded JSON doc.
    * @input $refQueue a queue for stuffing found JSON Refs into.
@@ -233,14 +244,15 @@ class JsonDocs implements \IteratorAggregate
             throw new JsonReferenceException("Illegal JSON Schema. An object may not have both of '\$id' and '\$ref'");
           }
           if(isset($identities[$id])) {
-            throw new JsonReferenceException("Duplicate \$id '$id' found");
+            throw new JsonReferenceException("Duplicate \$id '$id' found in document");
           }
           $identities[$id] = &$value;
         }
         if(self::isJsonRef($value)) {
           $refUri = $baseUri->resolveRelativeUriOn(new Uri(self::getJsonRefPointer($value)));
           defined('DEBUG') && print "\tFOUND REF: $refUri, DEPTH: $depth";
-          $jsonRef = new JsonRef($value, $refUri, -1*$depth);
+          $value->{'$ref'} = $refUri;
+          $jsonRef = new JsonRef($value, -1*$depth);
           $refQueue->insert($jsonRef, $jsonRef);
           $refUris[] = $refUri;
         }
@@ -312,12 +324,7 @@ class JsonDocs implements \IteratorAggregate
    * Get the pointer from a JSON Ref.
    */
   public static function getJsonRefPointer($o) {
-    $refVar = '$ref';
-    $ref = null;
-    if(is_object($o) && isset($o->$refVar)) {
-      $ref = $o->$refVar;
-    }
-    return $ref;
+    return (is_object($o) && isset($o->{'$ref'})) ? $o->{'$ref'} : null;
   }
 
   public static function isJsonRef($o) {
@@ -325,8 +332,7 @@ class JsonDocs implements \IteratorAggregate
   }
 
   public static function getId($o) {
-    $id = '$id';
-    return (is_object($o) && isset($o->$id)) ? $o->$id : null;
+    return (is_object($o) && isset($o->{'$id'})) ? $o->{'$id'} : null;
   }
 
   /**
@@ -347,5 +353,75 @@ class JsonDocs implements \IteratorAggregate
     return new Uri($uri);
   }
 }
+
+
+/**
+ * Stores a reference to a $ref object for *internal use only*. Basically a simple wrapper over the ref to support
+ * stuffing in a PriorityQueue/
+ */
+class JsonRef
+{
+  private $srcRef;
+  private $jsonRef;
+  private $pointer;
+  private $priority;
+
+  /**
+   * Construct JsonRef. Expect the URI should be absolute.
+   * @input $srcRef the varaiable that should be resolved to the pointer.
+   * @input $jsonRef a URI. Should be absolute but not enforced.
+   */
+  public function __construct(&$srcRef, $priority) {
+    $this->srcRef =& $srcRef;
+    $this->jsonRef = $srcRef->{'$ref'};
+    $this->pointer = $this->jsonRef->fragment ? preg_replace("#/+#", "/", $this->jsonRef->fragment) : "/"; // Empty pointer replaced with / (same thing).
+    $this->priority = $priority;
+  }
+
+  /**
+   * Get the JSON reference by reference.
+   */
+  public function &getRef() {
+    return $this->srcRef;
+  }
+
+  /**
+   * Get the pointer.
+   */
+  public function getPointer() {
+    return $this->pointer;
+  }
+
+  /**
+   * Get the full URI.
+   */
+  public function getUri() {
+    return clone $this->jsonRef;
+  }
+
+  /**
+   * Total hierachical ordering, path segments over alphabetical order.
+   */
+  public function compare(JsonRef $that) {
+    if($this->priority > $that->priority ) {
+      return 1;
+    }
+    else if($this->priority < $that->priority ) {
+      return -1;
+    }
+    else {
+      if($this->pointer < $that->pointer) {
+        return 1;
+      }
+      else if($this->pointer > $that->pointer) {
+        return -1;
+      }
+      else {
+        return 0;
+      }
+    }
+  }
+}
+
 
 class JsonDocsException extends \Exception {}
