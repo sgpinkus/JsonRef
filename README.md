@@ -54,11 +54,13 @@ JSON Reference is not JSON Merge or JSON Patch and supporting such is beyond the
 JSON Reference is not JSON Schema draft v07+'s JSON Reference implementation.
 
 # JSON SCHEMA STYLE JSON REFERENCE CONFORMANCE
-Like JSON Schema draft v06+ specifications, this implementation breaks with the original specification in using '$id' instead of `id` for identifiers. However, this implementation diverges with the JSON Schema style JSON Reference in some places.
+Like JSON Schema draft v06+ specifications, this implementation breaks with the original specification in using `$id` instead of `id` for identifiers. However, this implementation diverges with the JSON Schema style JSON Reference in some places.
 
-  - A root level `$id` does not establish the base URI of the document. Instead a base URI is provided by the client, either explicitly or as the URI from which the resource was loaded. Clients may observe the root level `$id` and pass that in as the base URI if they wish.
-  - The `$id` keyword *DOES NOT* establish a new base URI. Instead each distinct document has a base URI, and any relative URI encountered is qualified against this *singular*, document wide base URI.
+  - By default a root level `$id` does not establish the base URI of the document. Instead a base URI is provided by the client, either explicitly, or as the URI from which the resource was loaded. Clients may observe the root level `$id` and pass that in as the base URI if they wish.
+  - By default the `$id` keyword does not change the new base URI. By default each distinct document has a base URI (as above), and any relative URI encountered is qualified against this *singular*, document wide base URI.
   - This implementation places no restriction on where a `$ref` can occur or what a `$ref` can refer to.
+
+To enable relative base URI mangling consistent with JSON Schema, pass `true` as 2nd argument to `JSONDocs` constructor: `new JSONDocs($loader, true)`.
 
 # NOTE ON JSON REFERENCE
 

@@ -23,15 +23,17 @@ use JsonDoc\Exception\JsonReferenceException;
  */
 class JsonDocs implements \IteratorAggregate
 {
-  private $cache = [];
-  private $loader;
+  private $cache = []; // URI keyed array of loaded documents.
+  private $loader; // URI loader.
+  private $rebaseUris = false; // Whether to do JSON Schema's silly relative base URI resets.
 
   /**
    * Init. Use Null loader which refuses to load external refs by default for security.
    * @input $loader JsonLoader optional loader.
    */
-  public function __construct(JsonLoader $loader = null) {
+  public function __construct(JsonLoader $loader = null, $rebaseUris = false) {
     $this->loader = $loader ? $loader : new JsonNullLoader();
+    $this->rebaseUris = $rebaseUris;
   }
 
   /**
@@ -178,7 +180,7 @@ class JsonDocs implements \IteratorAggregate
 
     $identities = [];
     $refUris = [];
-    self::parseDoc($doc, $refQueue, $refUris, $identities, $keyUri);
+    self::parseDoc($doc, $refQueue, $refUris, $identities, $keyUri, $this->rebaseUris);
     $this->cache[$keyUri.''] = ['doc' => $doc, 'ids' => $identities, 'src' => $strDoc];
 
     foreach($refUris as $uri) {
@@ -229,13 +231,18 @@ class JsonDocs implements \IteratorAggregate
    * @input $doc a decoded JSON doc.
    * @input $refQueue a queue for stuffing found JSON Refs into.
    * @input $refUris array for stash the absolute URIS from the refs in.
-   * @intpu $identities array for stashing objects with identities in.
+   * @input $identities array for stashing objects with identities in.
+   * @input $rebaseUris whether to relative BASE URI rewriting (default NO).
    * @input $baseUri the current base URI used for resolving relative JSON Ref pointers found.
    * @throws JsonReferenceException
    */
-  public static function parseDoc(&$doc, \SplPriorityQueue $refQueue, array &$refUris, array &$identities, Uri $baseUri, $depth = 0) {
+  public static function parseDoc(&$doc, \SplPriorityQueue $refQueue, array &$refUris, array &$identities, Uri $baseUri, $rebaseUris = false, $depth = 0) {
     defined('DEBUG') && print __METHOD__ . " $baseUri\n";
     if(is_object($doc) || is_array($doc)) {
+      $id = self::getId($doc);
+      if($id && $rebaseUris) {
+        $baseUri = $baseUri->resolveRelativeUriOn(new Uri($id));
+      }
       foreach($doc as $key => &$value) {
         defined('DEBUG') && print "\tKEY: $key\n";
         $id = self::getId($value);
@@ -257,7 +264,7 @@ class JsonDocs implements \IteratorAggregate
           $refUris[] = $refUri;
         }
         else if(is_object($value) || is_array($value)) {
-          self::parseDoc($value, $refQueue, $refUris, $identities, $baseUri, $depth+1);
+          self::parseDoc($value, $refQueue, $refUris, $identities, $baseUri, $rebaseUris, $depth+1);
         }
       }
     }
