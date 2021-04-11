@@ -1,5 +1,5 @@
 {
-  "name": "sam-at-github/jsondoc",
+  "name": "sgpinkus/jsondoc",
   "description": "A PHP JSON Schema validator",
   "license": "GPL-3.0",
   "require": {
