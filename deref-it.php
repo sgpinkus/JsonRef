@@ -1,5 +1,4 @@
 <?php
-define('DEBUG', 1);
 require_once './vendor/autoload.php';
 use JsonDoc\JsonDocs;
 use JsonDoc\JsonLoader;

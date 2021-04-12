@@ -3,7 +3,8 @@
   "description": "A PHP JSON Schema validator",
   "license": "GPL-3.0",
   "require": {
-    "php": ">=5.3"
+    "php": ">=5.3",
+    "sgpinkus/simplelogger": "dev-master"
   },
   "require-dev": {
       "phpunit/phpunit" : "4.*"
@@ -13,6 +14,12 @@
       "JsonDoc\\": ""
     }
   },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/sgpinkus/simplelogger"
+    }
+  ],
   "scripts": {
       "test": "phpunit --configuration=./tests/phpunit.xml tests/",
       "coverage": "phpunit --coverage-text --coverage-clover=coverage.clover --configuration=./tests/phpunit.xml tests/",

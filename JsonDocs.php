@@ -1,6 +1,7 @@
 <?php
 namespace JsonDoc;
 
+use SimpleLogger\Logger;
 use JsonDoc\JsonNullLoader;
 use JsonDoc\JsonRefPriorityQueue;
 use JsonDoc\JsonRef;
@@ -157,7 +158,7 @@ class JsonDocs implements \IteratorAggregate
    * @input $strDoc Mixed. If Null try to load from Uri. If string try to decode. Else assume its an object.
    */
   private function _load(Uri $uri, \SplPriorityQueue $refQueue, $strDoc = null) {
-    defined('DEBUG') && print __METHOD__ . " $uri\n";
+    Logger::getLogger()->debug($uri);
     $tempRefs = [];
     $keyUri = self::normalizeKeyUri($uri);
 
@@ -237,14 +238,14 @@ class JsonDocs implements \IteratorAggregate
    * @throws JsonReferenceException
    */
   public static function parseDoc(&$doc, \SplPriorityQueue $refQueue, array &$refUris, array &$identities, Uri $baseUri, $rebaseUris = false, $depth = 0) {
-    defined('DEBUG') && print __METHOD__ . " $baseUri\n";
+    Logger::getLogger()->debug($baseUri);
     if(is_object($doc) || is_array($doc)) {
       $id = self::getId($doc);
       if($id && $rebaseUris) {
         $baseUri = $baseUri->resolveRelativeUriOn(new Uri($id));
       }
       foreach($doc as $key => &$value) {
-        defined('DEBUG') && print "\tKEY: $key\n";
+        Logger::getLogger()->debug("\tKEY: $key");
         $id = self::getId($value);
         if($id) {
           if(self::isJsonRef($value)) {
@@ -257,7 +258,7 @@ class JsonDocs implements \IteratorAggregate
         }
         if(self::isJsonRef($value)) {
           $refUri = $baseUri->resolveRelativeUriOn(new Uri(self::getJsonRefPointer($value)));
-          defined('DEBUG') && print "\tFOUND REF: $refUri, DEPTH: $depth";
+          Logger::getLogger()->debug("\tFOUND REF: $refUri, DEPTH: $depth");
           $value->{'$ref'} = $refUri;
           $jsonRef = new JsonRef($value, -1*$depth);
           $refQueue->insert($jsonRef, $jsonRef);
