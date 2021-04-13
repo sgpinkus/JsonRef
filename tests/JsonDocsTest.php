@@ -200,6 +200,23 @@ class JsonDocsTest extends TestCase
     $cache->loadUri(new Uri('file://' . getenv('DATADIR') . $filename));
   }
 
+  /**
+   * Test throws with strictIds enabled.
+   * @expectedException \JsonDoc\Exception\JsonReferenceException
+   */
+  public function testStrictIds() {
+    $cache = new JsonDocs(new JsonLoader(), true);
+    $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/non-strict-ids.json'));
+  }
+
+  /**
+   * Test does not throw with strictIds off.
+   */
+  public function testNotStrictIds() {
+    $cache = new JsonDocs(new JsonLoader(), false);
+    $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/non-strict-ids.json'));
+    $this->assertEquals($cache->count(), 1);
+  }
 
   /**
    * Test load from string.

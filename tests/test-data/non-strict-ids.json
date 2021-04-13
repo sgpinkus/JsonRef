@@ -1,0 +1,6 @@
+{
+  "$id": "http://this.is/allowed/even/in/strict/mode",
+  "x": {
+    "$id": "/this/is/not"
+  }
+}
