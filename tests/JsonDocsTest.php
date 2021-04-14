@@ -159,7 +159,7 @@ class JsonDocsTest extends TestCase
    */
   public function testJsonDocsRefChain() {
     $cache = new JsonDocs(new JsonLoader());
-    $doc = $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/basic-ref-to-ref.json'));
+    $doc = $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/basic-chained-ref.json'));
     $this->assertEquals($doc->B[0], 'X-Value');
   }
 
@@ -183,10 +183,10 @@ class JsonDocsTest extends TestCase
 
   public function dataRefLoopFails() {
     return [
-      # ['/loop-tests/inv-ref-loop-l0.json'], # TODO: This actually passes.
-      ['/loop-tests/inv-ref-loop-l2.json'],
-      ['/loop-tests/inv-ref-loop-l3.json'],
-      ['/loop-tests/inv-ref-loop-l4.json']
+      # ['/inv-ref-loop-l0.json'], # TODO: This actually passes.
+      ['/inv-ref-loop-l2.json'],
+      ['/inv-ref-loop-l3.json'],
+      ['/inv-ref-loop-l4.json']
     ];
   }
 
