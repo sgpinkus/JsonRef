@@ -1,0 +1,10 @@
+{
+  "tilda~field": "tilda",
+  "slash/field": "slash",
+  "percent%field": "percent",
+  "properties": {
+    "tilda": {"$ref": "#/tilda~0field"},
+    "slash": {"$ref": "#/slash~1field"},
+    "percent": {"$ref": "#/percent%25field"}
+  }
+}

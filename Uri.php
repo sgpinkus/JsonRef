@@ -14,7 +14,7 @@ class Uri
    * Init.
    */
   public function __construct($uri) {
-    $uri = preg_replace("/#$/", "# ", $uri); // "#" does not parse.
+    $uri = preg_replace("/#$/", "# ", urldecode($uri)); // "#" does not parse.
     $parse = parse_url($uri);
     if(isset($parse['fragment']) && $parse['fragment'] == " "){
       $parse['fragment'] = "";

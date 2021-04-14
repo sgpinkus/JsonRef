@@ -58,18 +58,6 @@ class JsonDocsTest extends TestCase
     $this->assertTrue($cache->exists(new Uri('file://' . getenv('DATADIR') . '/basic.json')));
   }
 
-
-  /**
-   * We better at least be able to load the JSON Schema schema.
-   */
-  public function testJsonSchemaSchema() {
-    $this->assertEquals(true, true);
-    $jsonDocs = new JsonDocs();
-    $docUri = "file://" . getenv('DATADIR') . '/schema-v4.json';
-    $doc = file_get_contents($docUri);
-    $schemaDoc = $jsonDocs->loadDocStr($doc, new Uri($docUri));
-  }
-
   /**
    * Test static getPointer(). Work on any doc.
    */
@@ -129,6 +117,18 @@ class JsonDocsTest extends TestCase
     $this->assertEquals($ref, "C-Value");
     $ref = 87;
     $this->assertEquals($cache->pointer($uri), 87);
+  }
+
+  /**
+   * Test refs with JSON Pointer encoded pointers.
+   */
+  public function testEncodedPointers() {
+    $cache = new JsonDocs(new JsonLoader());
+    $uri = new Uri('file://' . getenv('DATADIR') . '/json-pointer-encoding.json');
+    $doc = $cache->loadUri($uri);
+    $this->assertEquals($doc->properties->tilda, "tilda");
+    $this->assertEquals($doc->properties->slash, "slash");
+    $this->assertEquals($doc->properties->percent, "percent");
   }
 
   /**
