@@ -164,6 +164,15 @@ class JsonDocsTest extends TestCase
   }
 
   /**
+   * Test ref through ref OK
+   */
+  public function testJsonDocsRefThroughRef() {
+    $cache = new JsonDocs(new JsonLoader());
+    $doc = $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/basic-ref-through-ref.json'));
+    $this->assertEquals($doc->a->x, 'Hey you found me!');
+  }
+
+  /**
    * Test 'id' is not an '$id'.
    * @expectedException \JsonDoc\Exception\ResourceNotFoundException
    */
