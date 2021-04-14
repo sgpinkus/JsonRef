@@ -52,7 +52,7 @@ class JsonDocsTest extends TestCase
   /**
    * Basic test of JsonDocs instance.
    */
-  public function testJsonDocs() {
+  public function test() {
     $cache = new JsonDocs(new JsonLoader());
     $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/basic.json'));
     $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/basic-refs.json'));
@@ -158,19 +158,28 @@ class JsonDocsTest extends TestCase
   /**
    * Test ref to ref chain OK
    */
-  public function testJsonDocsRefChain() {
+  public function testRefChain() {
     $cache = new JsonDocs(new JsonLoader());
     $doc = $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/basic-chained-ref.json'));
     $this->assertEquals($doc->B[0], 'X-Value');
   }
 
+  public function dataRefThroughRef() {
+    return [
+      ['/ref-through-ref-1.json'],
+      ['/ref-through-ref-2.json'],
+      ['/ref-through-ref-3.json']
+    ];
+  }
+
   /**
    * Test ref through ref OK
+   * @dataProvider dataRefThroughRef
    */
-  public function testJsonDocsRefThroughRef() {
+  public function testRefThroughRef($filename) {
     $cache = new JsonDocs(new JsonLoader());
-    $doc = $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/basic-ref-through-ref.json'));
-    $this->assertEquals($doc->a->x, 'Hey you found me!');
+    $doc = $cache->loadUri(new Uri('file://' . getenv('DATADIR') . $filename));
+    $this->assertEquals($doc->a->x, 'treasure');
   }
 
   /**

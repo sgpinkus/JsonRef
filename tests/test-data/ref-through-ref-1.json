@@ -4,6 +4,6 @@
   },
   "b": { "$ref": "#/c" },
   "c": {
-    "x": "Hey you found me!"
+    "x": "treasure"
   }
 }

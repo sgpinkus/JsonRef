@@ -9,15 +9,19 @@ use JsonDoc\Uri;
 use JsonDoc\Exception\JsonDecodeException;
 use JsonDoc\Exception\ResourceNotFoundException;
 use JsonDoc\Exception\JsonReferenceException;
+use JsonDoc\Exception\UnexpectedReferenceException;
 
 /**
- * Maintains a cache of decoded, dereferenced JSON docs. Cache is keyed by an absolute URI provided for or extracted from each doc.
- * Loading JSON that contains JSON refs and dereferencing are closely coupled. So this class has both loading and deref responsibilities.
- * Json References are literally replaced with PHP references to other loaded documents in the internal cache (Yes, the cache is potentially a big graph).
- * Supports retrieving part of a doc by JSON Pointer. Note however, when loading a document the fragment part of a URIs is ignored.
- * Actually loading raw data from remote (or local) sources pointed at by URIs is delegated to a JsonLoader. This allows
- * the client to use different loader implementations - for example a loader that refuses to load remote resources.
+ * Maintains a cache of decoded, dereferenced JSON docs. Cache is keyed by an absolute URI provided
+ * for or extracted from each doc. Loading JSON that contains JSON refs and dereferencing are closely
+ * coupled. So this class has both loading and deref responsibilities. Json References are literally
+ * replaced with PHP references to other loaded documents in the internal cache (the cache is
+ * potentially a big graph).
+ * Loading raw data from remote (or local) sources pointed at by non fragment URIs is delegated to
+ * a JsonLoader. This allows the client to use different loader implementations. The default NullLoader
+ * refuses to load remote resources.
  * For notes on the Json Reference specification see the following.
+ * @see http://jsonref.org
  * @see http://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03
  * @see http://json-schema.org/latest/json-schema-core.html#anchor25
  * @see https://github.com/json-schema/json-schema/wiki/$ref-traps
@@ -126,12 +130,13 @@ class JsonDocs implements \IteratorAggregate
   }
 
   /**
-   * Return a part of a document pointed to by $uri.
+   * Return the part of the document in cache pointed to by $uri.
    * @input $uri absolute URI, with optional fragment part.
+   * @input $returnIfRef If true, if a $ref object is encountered return it, otherwise throw.
    * @returns mixed reference to the loaded JSON object data structure.
    * @throws ResourceNotFoundException
    */
-  public function &pointer(Uri $uri) {
+  public function &pointer(Uri $uri, $returnIfRef = false) {
     $keyUri = self::normalizeKeyUri($uri);
     $pointer = $uri->fragment ? $uri->fragment : "";
 
@@ -139,7 +144,7 @@ class JsonDocs implements \IteratorAggregate
       throw new \ResourceNotFoundException("Resource $keyUri not loaded");
     }
 
-    return self::getPointer($this->cache[$keyUri.'']['doc'], $pointer, $this->cache[$keyUri.'']['ids']);
+    return self::getPointer($this->cache[$keyUri.'']['doc'], $pointer, $this->cache[$keyUri.'']['ids'], $returnIfRef);
   }
 
   /**
@@ -216,7 +221,7 @@ class JsonDocs implements \IteratorAggregate
 
   private function __deRef(&$ref, $loop = []) {
     $loop[] = $ref;
-    $target =& $this->pointer($ref->{'$ref'});
+    $target =& $this->pointer($ref->{'$ref'}, true);
     if(self::isJsonRef($target)) {
       if(in_array($target, $loop)) {
         throw new JsonReferenceException("JSON Reference loop detected");
@@ -293,7 +298,7 @@ class JsonDocs implements \IteratorAggregate
    * @return reference to the pointed to value. Note return by *reference*.
    * @throws ResourceNotFoundException
    */
-  public static function &getPointer($doc, $pointer, array $ids = []) {
+  public static function &getPointer($doc, $pointer, array $ids = [], $returnIfRef = false) {
     if(strlen($pointer) === 0) { // { $ref: "#" }.
       return $doc;
     }
@@ -320,6 +325,14 @@ class JsonDocs implements \IteratorAggregate
         $currentPointer .= "/$part";
 
         if(is_object($doc)) {
+          if (isset($doc->{'$ref'})) {
+            if($returnIfRef) {
+              return $doc;
+            }
+            else {
+              throw new ResourceNotFoundException("Could not find ref=$pointer in document. Encounted pointer when looking for $currentPointer");
+            }
+          }
           if(isset($doc->$part)) {
             $doc = &$doc->$part;
           }
@@ -380,27 +393,27 @@ class JsonDocs implements \IteratorAggregate
  */
 class JsonRef
 {
-  private $srcRef;
+  public $ref;
   private $jsonRef;
   private $pointer;
   private $depth;
 
   /**
-   * Construct JsonRef. Assumes $srcRef is a valid $ref and $ref has been parsed to absolute URI.
-   * @input $srcRef the varaiable that should be resolved to the pointer.
+   * Construct JsonRef. Assumes $ref is a valid $ref and $ref has been parsed to absolute URI.
+   * @input $ref the varaiable that should be resolved to the pointer.
    * @input $jsonRef a URI. Should be absolute but not enforced.
    */
-  public function __construct(&$srcRef, $depth) {
+  public function __construct(&$ref, $depth = 0) {
     // if(!$jsonRef instanceof Uri && $jsonRef->isAbsoluteUri()) { throw new JsonDocsException('Expected a URI'); }
-    $this->srcRef =& $srcRef;
-    $this->jsonRef = $srcRef->{'$ref'};
+    $this->ref =& $ref;
+    $this->jsonRef = $ref->{'$ref'};
     $this->pointer = $this->jsonRef->fragment ? preg_replace("#/+#", "/", $this->jsonRef->fragment) : ""; // Empty pointer replaced with / (same thing)
     $this->pointerDepth = count(explode("/", $this->pointer));
     $this->depth = $depth;
   }
 
   public function &getRef() {
-    return $this->srcRef;
+    return $this->ref;
   }
 
   public function getUri() {
