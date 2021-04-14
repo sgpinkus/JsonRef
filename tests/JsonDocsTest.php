@@ -37,9 +37,10 @@ class JsonDocsTest extends TestCase
     $jsonRef4 = $refQueue->extract();
     $this->assertTrue($jsonRef1 instanceof JsonRef);
     $this->assertTrue($jsonRef2 instanceof JsonRef);
-    $this->assertEquals($jsonRef1->getPointer(), '/');
+    $this->assertEquals($jsonRef1->getPointer(), '');
     $this->assertEquals($jsonRef2->getPointer(), 'foo');
-    $this->assertEquals($jsonRef4->getPointer(), '/C');
+    $this->assertEquals($jsonRef3->getPointer(), '');
+    $this->assertEquals($jsonRef4->getPointer(), '/D');
     $jsonRef1 =& $jsonRef1->getRef();
     $jsonRef2 =& $jsonRef2->getRef();
     $jsonRef1 = "XXX";

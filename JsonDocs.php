@@ -5,6 +5,7 @@ use SimpleLogger\Logger;
 use JsonDoc\JsonNullLoader;
 use JsonDoc\JsonRefPriorityQueue;
 use JsonDoc\JsonRef;
+use JsonDoc\Uri;
 use JsonDoc\Exception\JsonDecodeException;
 use JsonDoc\Exception\ResourceNotFoundException;
 use JsonDoc\Exception\JsonReferenceException;
@@ -247,7 +248,7 @@ class JsonDocs implements \IteratorAggregate
           $refUri = $baseUri->resolveRelativeUriOn(new Uri(self::getJsonRefPointer($value)));
           Logger::getLogger()->debug("\tFOUND REF: $refUri, DEPTH: $depth");
           $value->{'$ref'} = $refUri;
-          $jsonRef = new JsonRef($value, -1*$depth);
+          $jsonRef = new JsonRef($value, $depth);
           $refQueue->insert($jsonRef, $jsonRef);
           $refUris[] = $refUri;
         }
@@ -382,61 +383,54 @@ class JsonRef
   private $srcRef;
   private $jsonRef;
   private $pointer;
-  private $priority;
+  private $depth;
 
   /**
-   * Construct JsonRef. Expect the URI should be absolute.
+   * Construct JsonRef. Assumes $srcRef is a valid $ref and $ref has been parsed to absolute URI.
    * @input $srcRef the varaiable that should be resolved to the pointer.
    * @input $jsonRef a URI. Should be absolute but not enforced.
    */
-  public function __construct(&$srcRef, $priority) {
+  public function __construct(&$srcRef, $depth) {
+    // if(!$jsonRef instanceof Uri && $jsonRef->isAbsoluteUri()) { throw new JsonDocsException('Expected a URI'); }
     $this->srcRef =& $srcRef;
     $this->jsonRef = $srcRef->{'$ref'};
-    $this->pointer = $this->jsonRef->fragment ? preg_replace("#/+#", "/", $this->jsonRef->fragment) : "/"; // Empty pointer replaced with / (same thing).
-    $this->priority = $priority;
+    $this->pointer = $this->jsonRef->fragment ? preg_replace("#/+#", "/", $this->jsonRef->fragment) : ""; // Empty pointer replaced with / (same thing)
+    $this->pointerDepth = count(explode("/", $this->pointer));
+    $this->depth = $depth;
   }
 
-  /**
-   * Get the JSON reference by reference.
-   */
   public function &getRef() {
     return $this->srcRef;
   }
 
-  /**
-   * Get the pointer.
-   */
+  public function getUri() {
+    return clone $this->jsonRef;
+  }
+
   public function getPointer() {
     return $this->pointer;
   }
 
   /**
-   * Get the full URI.
-   */
-  public function getUri() {
-    return clone $this->jsonRef;
-  }
-
-  /**
-   * Total hierachical ordering, path segments over alphabetical order.
+   * Total hierachical ordering pointerDepth > depth > ...
+   * Lower pointerDepth has higher priority.
    */
   public function compare(JsonRef $that) {
-    if($this->priority > $that->priority ) {
+    Logger::getLogger()->debug("{$this->pointer}, {$that->pointer} :: {$this->pointerDepth}, {$that->pointerDepth}");
+    if($this->pointerDepth > $that->pointerDepth ) {
+      return -1;
+    }
+    else if($this->pointerDepth < $that->pointerDepth ) {
       return 1;
     }
-    else if($this->priority < $that->priority ) {
+    if($this->depth < $that->depth) {
+      return 1;
+    }
+    else if($this->depth > $that->depth) {
       return -1;
     }
     else {
-      if($this->pointer < $that->pointer) {
-        return 1;
-      }
-      else if($this->pointer > $that->pointer) {
-        return -1;
-      }
-      else {
-        return 0;
-      }
+      return 0;
     }
   }
 }

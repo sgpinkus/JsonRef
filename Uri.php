@@ -11,12 +11,12 @@ class Uri
   private $parts = [];
 
   /**
-   * Init.
+   * Init. The simplest valid Uri is "#" ("" is not valid).
    */
   public function __construct($uri) {
-    $uri = preg_replace("/#$/", "# ", urldecode($uri)); // "#" does not parse.
-    $parse = parse_url($uri);
-    if(isset($parse['fragment']) && $parse['fragment'] == " "){
+    $parse = preg_replace("/#$/", "# ", urldecode($uri)); // Ensure empty frag parses to not null.
+    $parse = parse_url($parse);
+    if(isset($parse['fragment']) && $parse['fragment'] == " ") {
       $parse['fragment'] = "";
     }
     if(!$parse) {
