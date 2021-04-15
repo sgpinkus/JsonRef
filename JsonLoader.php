@@ -1,10 +1,11 @@
 <?php
 namespace JsonDoc;
 
+use JsonDoc\Exception\JsonDecodeException;
 use JsonDoc\Exception\ResourceNotFoundException;
 
 /**
- * Shim interface to alow client to control loading.
+ * Shim interface to allow client to control loading.
  * Loads what should be a raw JSON doc given a URI. Limit ourselves to local file for now.
  * @todo add remote capable JsonLoader or add scheme det here.
  */
