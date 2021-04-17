@@ -1,9 +1,22 @@
 {
   "comment": "Valid circuits.",
   "definitions": {
-    "foo": {"properties": {"bar": {"$ref": "#/definitions/bar"}}},
-    "bar": {"properties": {"foo": {"$ref": "#/definitions/foo"}}}
+    "foo": {
+      "type": "object",
+      "properties": {
+        "bar": { "$ref": "#/definitions/bar" }
+      },
+      "required": ["bar"]
+    },
+    "bar": {
+      "type": "object",
+      "properties": {
+        "foo": { "$ref": "#/definitions/foo" }
+      }
+    }
   },
   "type": "object",
-  "properties": {"foo": {"$ref": "#/definitions/foo"}}
+  "properties": {
+    "foo": { "$ref": "#/definitions/foo" }
+   }
 }
