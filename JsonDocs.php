@@ -305,20 +305,22 @@ class JsonDocs implements \IteratorAggregate
    * @throws ResourceNotFoundException
    */
   public static function &getPointer($doc, $pointer, array $ids = [], $returnIfRef = false) {
-    if(strlen($pointer) === 0) { // { $ref: "#" }.
-      return $doc;
-    }
-    elseif(substr($pointer, 0, 1) !== "/") { // id ref.
-      if(isset($ids[$pointer])) {
-        return $ids[$pointer];
+    $id = "";
+    if($pointer && substr($pointer, 0, 1) !== "/") { // id ref.
+      @[$id, $pointer] = explode("/", $pointer, 2);
+      if(isset($ids[$id])) {
+        $doc =& $ids[$id];
       }
       else {
-        throw new ResourceNotFoundException("Could not find id=$pointer in document");
+        throw new ResourceNotFoundException("Could not find id=$id in document");
       }
+    }
+    if(!$pointer) { // { $ref: "#" }.
+      return $doc;
     }
     else { // pointer ref.
       $parts = explode("/", $pointer);
-      $currentPointer = "";
+      $currentPointer = "#$id";
       $doc =& $doc;
 
       foreach($parts as $part) {

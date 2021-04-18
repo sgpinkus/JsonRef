@@ -187,7 +187,7 @@ class JsonDocsTest extends TestCase
   public function testUseOfId() {
     $cache = new JsonDocs(new JsonLoader());
     $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/no-keyword-id.json'));
-    $cache->pointer(new Uri('file://' . getenv('DATADIR') . '/no-keyword-id.json#foo'));
+    $x = $cache->pointer(new Uri('file://' . getenv('DATADIR') . '/no-keyword-id.json#foo'));
   }
 
   public function testUseOfDollarId() {

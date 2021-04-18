@@ -4,17 +4,17 @@
   "description": "Core schema meta-schema",
   "type": "object",
   "properties": {
-      "id": {
+    "id": {
       "type": "string",
       "format": "uri"
-      },
-      "foo": {
-        "type": "object",
-        "properties": {
-          "id": "fooey",
-          "comment": "not actually legal but for test"
-        }
+    },
+    "foo": {
+      "type": "object",
+      "properties": {
+        "id": "fooey",
+        "comment": "not actually legal but for test"
       }
+    }
    },
    "required" : ["id", "foo"]
 }
