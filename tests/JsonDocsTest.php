@@ -27,9 +27,7 @@ class JsonDocsTest extends TestCase
     $doc = json_decode(self::$basicRefsJson);
     $uri = new Uri('file://' . getenv('DATADIR') . '/basic-refs.json');
     $refQueue = new JsonRefPriorityQueue();
-    $refUris = [];
-    $ids = [];
-    JsonDocs::parseDoc($doc, $refQueue, $refUris, $ids, $uri);
+    [$ids, $refUris] = JsonDocs::parseDoc($doc, $refQueue, $uri);
     $this->assertEquals($refQueue->count(), 5);
     $jsonRef1 = $refQueue->extract();
     $jsonRef2 = $refQueue->extract();
@@ -235,6 +233,17 @@ class JsonDocsTest extends TestCase
     $cache = new JsonDocs(new JsonLoader(), false);
     $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/non-strict-ids.json'));
     $this->assertEquals($cache->count(), 1);
+  }
+
+
+  /**
+   * Test $refProp and $idProp.
+   */
+  public function testRefAndIdProp() {
+    $cache = new JsonDocs(new JsonLoader(), false);
+    $doc = $cache->loadUri(new Uri('file://' . getenv('DATADIR') . '/ref-id-prop.json'));
+    $this->assertEquals($doc->c, 1);
+    $this->assertEquals($doc->d->b, 1);
   }
 
   /**

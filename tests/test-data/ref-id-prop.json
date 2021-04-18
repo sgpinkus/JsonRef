@@ -1,0 +1,8 @@
+{
+  "$refProp": "foo",
+  "$idProp": "bah",
+  "a": 1,
+  "b": { "bah": "b", "b": 1 },
+  "c": { "foo": "#/a" },
+  "d": { "foo": "#b" }
+}

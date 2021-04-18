@@ -14,7 +14,7 @@ class JsonArrayLoader extends JsonLoader
   private $schemaMap;
 
   /**
-   * Construct by parsing $schemas array. entries can be either JSON document strings or 2-tuples: [$uri, $schema]
+   * Construct by parsing $schemas array. Entries can be either JSON document strings or 2-tuples: [$uri, $schema]
    * where $schema is a string or \StdObject instance.
    * @input $schemas array of schemas.
    */
@@ -33,8 +33,9 @@ class JsonArrayLoader extends JsonLoader
           throw new JsonDecodeException(json_last_error());
         }
       }
-      if(is_object($schema)) {
-        $uri = new Uri($schema->{'$id'});
+      if(!$uri && is_object($schema)) {
+        $refProp = $schema->{'$refProp'} ?? '$id';
+        $uri = new Uri($schema->$refProp);
       }
       if(!$uri || !$uri->isAbsoluteUri()) {
         throw new \LogicException("Could not resolve URI to identify schema at index $i.");

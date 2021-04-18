@@ -185,12 +185,10 @@ class JsonDocs implements \IteratorAggregate
       $strDoc = json_encode($strDoc);
     }
 
-    $identities = [];
-    $refUris = [];
-    self::parseDoc($doc, $refQueue, $refUris, $identities, $keyUri, $this->strictIds);
+    [$identities, $refUris] = self::parseDoc($doc, $refQueue, $keyUri, $this->strictIds);
     $this->cache[$keyUri.''] = ['doc' => $doc, 'ids' => $identities, 'src' => $strDoc];
 
-    foreach($refUris as $uri) {
+    foreach($refUris as $uri) { // All refd resources are preloaded.
       $this->_load($uri, $refQueue);
     }
     $this->_deRef($refQueue);
@@ -237,31 +235,40 @@ class JsonDocs implements \IteratorAggregate
    * Can't use standard recursive iterator here because references + iterators don't work together.
    * @input $doc a decoded JSON doc.
    * @input $refQueue a queue for stuffing found JSON Refs into.
-   * @input $refUris array for stash the absolute URIS from the refs in.
-   * @input $identities array for stashing objects with identities in.
-   * @input $baseUri the current base URI used for resolving relative JSON Ref pointers found.
+   * @input $baseUri base URI for relative $ref resolution. Doesn't actually need to be done by this method - legacy ..
+   * @input $strictIds raise exception if illegal $id is found
    * @throws JsonReferenceException
    */
-  public static function parseDoc(&$doc, \SplPriorityQueue $refQueue, array &$refUris, array &$identities, Uri $baseUri, $strictIds = true, $depth = 0) {
+  public static function parseDoc(&$doc, \SplPriorityQueue $refQueue, Uri $baseUri, bool $strictIds = false,
+    $idProp = false, $refProp = false, array &$identities = [], array &$refUris = [], $depth = 0): array
+  {
     Logger::getLogger()->debug($baseUri);
+    if(!$idProp) {
+      $idProp = $doc->{'$idProp'} ?? '$id';
+    }
+    if(!$refProp) {
+      $refProp = $doc->{'$refProp'} ?? '$ref';
+    }
     if(is_object($doc) || is_array($doc)) {
-      static::addId($doc, $identities, $depth, $strictIds);
+      static::pushId($identities, $doc, $idProp, $refProp, $depth, $strictIds);
       foreach($doc as $key => &$value) {
         Logger::getLogger()->debug("\tKEY: $key");
-        // static::addId($doc, $identities);
-        if(self::isJsonRef($value)) {
-          $refUri = $baseUri->resolveRelativeUriOn(new Uri(self::getJsonRefPointer($value)));
+        if($value->$refProp ?? null) {
+          $refUri = $baseUri->resolveRelativeUriOn(new Uri($value->$refProp));
           Logger::getLogger()->debug("\tFOUND REF: $refUri, DEPTH: $depth");
-          $value->{'$ref'} = $refUri;
+          $value->{'$ref'} = $refUri; // Rewrite to standard location.
           $jsonRef = new JsonRef($value, $depth);
           $refQueue->insert($jsonRef, $jsonRef);
           $refUris[] = $refUri;
         }
         else if(is_object($value) || is_array($value)) {
-          self::parseDoc($value, $refQueue, $refUris, $identities, $baseUri, $strictIds, $depth+1);
+          [$identities, $refUris] = self::parseDoc(
+            $value, $refQueue, $baseUri, $strictIds, $idProp, $refProp, $identities, $refUris, $depth + 1
+          );
         }
       }
     }
+    return [$identities, $refUris];
   }
 
   /**
@@ -273,18 +280,17 @@ class JsonDocs implements \IteratorAggregate
    * @input $strictIds apply syntax check on id values.
    * @throws JsonReferenceException
    */
-  private static function addId(&$doc, &$identities, $depth, $strictIds = true) {
+  private static function pushId(&$identities, &$doc, $idProp, $refProp, $depth = 0, $strictIds = true) {
     $idRegex = "/^[a-z][a-z0-9_.:-]*$/i";
-    $id = (is_object($doc) && isset($doc->{'$id'})) ? $doc->{'$id'} : null;
+    $id = $doc->$idProp ?? null;
     if($id) {
       if($depth && $strictIds && !preg_match($idRegex, $id)) {
         throw new JsonReferenceException("Illegal \$id. \$id must match ${idRegex}");
       }
-      if(self::isJsonRef($doc)) {
+      if(isset($doc->$refProp)) {
         throw new JsonReferenceException("Illegal JSON Schema. An object may not have both of '\$id' and '\$ref'");
       }
       if(isset($identities[$id])) {
-        var_dump($identities);
         throw new JsonReferenceException("Duplicate \$id '$id' found in document");
       }
       $identities[$id] = &$doc;
@@ -356,15 +362,8 @@ class JsonDocs implements \IteratorAggregate
     }
   }
 
-  /**
-   * Get the pointer from a JSON Ref.
-   */
-  public static function getJsonRefPointer($o) {
-    return (is_object($o) && isset($o->{'$ref'})) ? $o->{'$ref'} : null;
-  }
-
   public static function isJsonRef($o) {
-    return self::getJsonRefPointer($o);
+    return $o->{'$ref'} ?? null;
   }
 
   /**
@@ -394,20 +393,20 @@ class JsonDocs implements \IteratorAggregate
 class JsonRef
 {
   public $ref;
-  private $jsonRef;
+  private $refUri;
   private $pointer;
   private $depth;
 
   /**
-   * Construct JsonRef. Assumes $ref is a valid $ref and $ref has been parsed to absolute URI.
+   * Construct JsonRef. Internal use only. Assumes $ref->{'$ref'} is a valid $ref and $ref has been
+   * parsed to absolute URI.
    * @input $ref the varaiable that should be resolved to the pointer.
-   * @input $jsonRef a URI. Should be absolute but not enforced.
    */
   public function __construct(&$ref, $depth = 0) {
     // if(!$jsonRef instanceof Uri && $jsonRef->isAbsoluteUri()) { throw new JsonDocsException('Expected a URI'); }
     $this->ref =& $ref;
-    $this->jsonRef = $ref->{'$ref'};
-    $this->pointer = $this->jsonRef->fragment ? preg_replace("#/+#", "/", $this->jsonRef->fragment) : ""; // Empty pointer replaced with / (same thing)
+    $this->refUri = $ref->{'$ref'};
+    $this->pointer = $this->refUri->fragment ? preg_replace("#/+#", "/", $this->refUri->fragment) : ""; // Empty pointer replaced with / (same thing)
     $this->pointerDepth = count(explode("/", $this->pointer));
     $this->depth = $depth;
   }
@@ -417,7 +416,7 @@ class JsonRef
   }
 
   public function getUri() {
-    return clone $this->jsonRef;
+    return clone $this->refUri;
   }
 
   public function getPointer() {
