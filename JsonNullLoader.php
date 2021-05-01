@@ -1,8 +1,8 @@
 <?php
-namespace JsonDoc;
+namespace JsonRef;
 
-use JsonDoc\Exception\ResourceNotFoundException;
-use JsonDoc\JsonLoader;
+use JsonRef\Exception\ResourceNotFoundException;
+use JsonRef\JsonLoader;
 
 /**
  * Loads what should be a raw JSON doc given a URI.

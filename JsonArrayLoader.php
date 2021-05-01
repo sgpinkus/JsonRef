@@ -1,9 +1,9 @@
 <?php
-namespace JsonDoc;
+namespace JsonRef;
 
-use JsonDoc\Uri;
-use JsonDoc\JsonLoader;
-use JsonDoc\Exception\ResourceNotFoundException;
+use JsonRef\Uri;
+use JsonRef\JsonLoader;
+use JsonRef\Exception\ResourceNotFoundException;
 
 /**
  * Simple JsonLoader wrapper over an array of preloaded schemas.

@@ -1,15 +1,14 @@
 <?php
-namespace JsonDoc;
+namespace JsonRef;
 
 use SimpleLogger\Logger;
-use JsonDoc\JsonNullLoader;
-use JsonDoc\JsonRefPriorityQueue;
-use JsonDoc\JsonRef;
-use JsonDoc\Uri;
-use JsonDoc\Exception\JsonDecodeException;
-use JsonDoc\Exception\ResourceNotFoundException;
-use JsonDoc\Exception\JsonReferenceException;
-use JsonDoc\Exception\UnexpectedReferenceException;
+use JsonRef\JsonNullLoader;
+use JsonRef\JsonRefPriorityQueue;
+use JsonRef\Uri;
+use JsonRef\Exception\JsonDecodeException;
+use JsonRef\Exception\ResourceNotFoundException;
+use JsonRef\Exception\JsonReferenceException;
+use JsonRef\Exception\UnexpectedReferenceException;
 
 /**
  * Maintains a cache of decoded, dereferenced JSON docs. Cache is keyed by an absolute URI provided

@@ -1,5 +1,5 @@
 <?php
-namespace JsonDoc;
+namespace JsonRef;
 
 /**
  * A JsonRef PQueue. Used by JsonCache in dereferencing.

@@ -1,5 +1,5 @@
 {
-  "name": "sgpinkus/jsondoc",
+  "name": "sgpinkus/jsonref",
   "description": "A PHP JSON Reference dereferencer",
   "license": "GPL-3.0",
   "require": {
@@ -11,7 +11,7 @@
   },
   "autoload": {
     "psr-4": {
-      "JsonDoc\\": ""
+      "JsonRef\\": ""
     }
   },
   "repositories": [

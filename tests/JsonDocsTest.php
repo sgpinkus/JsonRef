@@ -1,10 +1,10 @@
 <?php
 
-use JsonDoc\JsonDocs;
-use JsonDoc\JsonRefPriorityQueue;
-use JsonDoc\Uri;
-use JsonDoc\JsonRef;
-use JsonDoc\JsonLoader;
+use JsonRef\JsonDocs;
+use JsonRef\JsonRefPriorityQueue;
+use JsonRef\Uri;
+use JsonRef\JsonRef;
+use JsonRef\JsonLoader;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -97,7 +97,7 @@ class JsonDocsTest extends TestCase
 
   /**
    * Test static getPointer() more.
-   * @expectedException \JsonDoc\Exception\ResourceNotFoundException
+   * @expectedException \JsonRef\Exception\ResourceNotFoundException
    */
   public function testGetNonPointer() {
     $doc = json_decode(self::$basicJson);
@@ -132,7 +132,7 @@ class JsonDocsTest extends TestCase
 
   /**
    * Test static pointer() more.
-   * @expectedException \JsonDoc\Exception\ResourceNotFoundException
+   * @expectedException \JsonRef\Exception\ResourceNotFoundException
    */
   public function testNonPointer() {
     $cache = new JsonDocs(new JsonLoader());
@@ -182,7 +182,7 @@ class JsonDocsTest extends TestCase
 
   /**
    * Test 'id' is not an '$id'.
-   * @expectedException \JsonDoc\Exception\ResourceNotFoundException
+   * @expectedException \JsonRef\Exception\ResourceNotFoundException
    */
   public function testUseOfId() {
     $cache = new JsonDocs(new JsonLoader());
@@ -210,7 +210,7 @@ class JsonDocsTest extends TestCase
   /**
    * Test 'id' is not an '$id'.
    * @dataProvider dataRefLoopFails
-   * @expectedException \JsonDoc\Exception\JsonReferenceException
+   * @expectedException \JsonRef\Exception\JsonReferenceException
    */
   public function testRefLoopFails($filename) {
     $cache = new JsonDocs(new JsonLoader());
@@ -219,7 +219,7 @@ class JsonDocsTest extends TestCase
 
   /**
    * Test throws with strictIds enabled.
-   * @expectedException \JsonDoc\Exception\JsonReferenceException
+   * @expectedException \JsonRef\Exception\JsonReferenceException
    */
   public function testStrictIds() {
     $cache = new JsonDocs(new JsonLoader(), true);
@@ -288,7 +288,7 @@ class JsonDocsTest extends TestCase
 
   /**
    * Test load from junk string.
-   * @expectedException \JsonDoc\Exception\JsonDecodeException
+   * @expectedException \JsonRef\Exception\JsonDecodeException
    */
   public function testLoadFromInvalidString() {
     $cache = new JsonDocs(new JsonLoader());
