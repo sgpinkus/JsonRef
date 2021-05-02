@@ -1,5 +1,5 @@
 # PHP JSONREF
-This library implements [JSON Reference v0.4.0](https://github.com/sgpinkus/jsonref.org) and by extension [JSON Pointer](https://tools.ietf.org/html/draft-ietf-appsawg-json-pointer-04) (JSON Reference requires JSON Pointer) for PHP. JSON Reference v0.4.0 succeeds [JSON Reference v0.3.0](https://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03) and is *not* entirely backwards compatible.
+This library implements [JSON Reference v0.4.0](http://jsonref.org) and by extension [JSON Pointer](https://tools.ietf.org/html/draft-ietf-appsawg-json-pointer-04) (JSON Reference requires JSON Pointer) for PHP. JSON Reference v0.4.0 succeeds [JSON Reference v0.3.0](https://tools.ietf.org/html/draft-pbryan-zyp-json-ref-03) and is *not* entirely backwards compatible.
 
 This library replaces JSON references in a JSON document with native PHP references to parts of the same decoded JSON document, or parts of some other decoded JSON document referred to by URI. It supports doing this on an existing decoded JSON document data structures, or loading and decoding the JSON document from a URL.
 
